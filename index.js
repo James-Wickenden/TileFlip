@@ -1,6 +1,6 @@
 'use strict';
-let grid;
-let canvas;
+let grid_target, grid_active;
+let canvas_target, canvas_active;
 let mouseX, mouseY = -1;
 let tile_width;
 let grid_size = 5;
@@ -12,8 +12,16 @@ paper.install(window);
 
 function setUpBoard(grid_size) 
 {
+    let act_cvs = setUpCanvas("gridCanvas_active", grid_size);
+    let tgt_cvs = setUpCanvas("gridCanvas_target", grid_size);
+
+    return [act_cvs[0], tgt_cvs[1], act_cvs[1], act_cvs[2], tgt_cvs[2]];
+};
+
+
+function setUpCanvas(canvasName, grid_size) {
     let tilemap = Array(grid_size).fill().map(() => Array(grid_size).fill([]));
-    let canvas = document.getElementById('gridCanvas');
+    let canvas = document.getElementById(canvasName);
 
     let grid_width = canvas.width;
     let tile_width = grid_width / grid_size;
@@ -91,7 +99,9 @@ document.onmousemove = handleMouseMove;
 window.onload = function()
 {
 	let cfg = setUpBoard(grid_size);
-    grid = cfg[0];
-    tile_width = cfg[1];
-    canvas = cfg[2];
+    grid_active = cfg[0];
+    grid_target = cfg[1]
+    tile_width = cfg[2];
+    canvas_active = cfg[3];
+    canvas_target = cfg[4];
 };

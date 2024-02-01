@@ -2,6 +2,7 @@
 <html lang='en-GB'>
   <head>
     <meta charset='UTF-8'/>
+    <link rel="stylesheet" href='main.css'>
     <title>Tile Flip</title>
     <!--<link rel="stylesheet" href='resources/css/main.css'>-->
     <script defer type="text/javascript" src="js/paperjs/dist/paper-core.js"></script>
@@ -10,6 +11,11 @@
   </head>
   <body>
     <h1>Tile Flip</h1>
-    <canvas id='gridCanvas' width='500px' height='500px'></canvas>
+    
+    <div class="image-row">
+      <canvas id='gridCanvas_target' width='500px' height='500px'></canvas>
+      <canvas id='gridCanvas_active' width='500px' height='500px'></canvas>
+    </div>
+    
   </body>
 </html>

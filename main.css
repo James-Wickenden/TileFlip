@@ -1,0 +1,6 @@
+.image-row {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 2%;
+    margin-right: 2%;
+  }
