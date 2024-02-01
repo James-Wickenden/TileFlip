@@ -40,6 +40,24 @@ function setUpCanvas(canvasName, grid_size) {
 };
 
 
+function testForEquatedBoards()
+{
+    let equality_flag = document.getElementById('equatedBoards');
+    for (var i = 0; i < grid_size; i++) {
+        for (var j = 0; j < grid_size; j++) {
+            if (grid_active[i][j].fillColor.red !== grid_target[i][j].fillColor.red) {
+                equality_flag.style.backgroundColor = 'red';
+                equality_flag.innerHTML = 'Unequal Boards!';
+                return;
+            }
+        }
+    }
+    equality_flag.style.backgroundColor = 'green';
+    equality_flag.innerHTML = 'Equal Boards!';
+    return;
+};
+
+
 function invertTile(canvasName, x, y, inversion_size)
 {
     let cur_grid;
@@ -65,6 +83,7 @@ function invertTile(canvasName, x, y, inversion_size)
             else {
                 tile.fillColor = 'green';
             }
+            testForEquatedBoards();
         }
     }
 };

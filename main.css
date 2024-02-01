@@ -3,4 +3,16 @@
     justify-content: space-between;
     margin-left: 2%;
     margin-right: 2%;
-  }
+}
+
+#equatedBoards {
+    background-color: green;
+    color: white;
+    padding: 5px;
+    margin: 10px;
+}
+
+#equateTarget {
+    margin: 10px;
+    padding: 5px;
+}
