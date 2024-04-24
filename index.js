@@ -1,7 +1,6 @@
 'use strict';
 let grid_target, grid_active;
 let canvas_target, canvas_active;
-let mouseX, mouseY = -1;
 let tile_width;
 let grid_size = 5;
 let inversion_size = 1;
@@ -58,6 +57,12 @@ function testForEquatedBoards()
 };
 
 
+function equateBoards()
+{
+    invertTile('gridCanvas_target', 2, 2, 1);
+};
+
+
 function invertTile(canvasName, x, y, inversion_size)
 {
     let cur_grid;
@@ -75,7 +80,7 @@ function invertTile(canvasName, x, y, inversion_size)
             if (invertedTile_x < 0 || invertedTile_x >= grid_size) continue;
             if (invertedTile_y < 0 || invertedTile_y >= grid_size) continue;
 
-            console.log(cur_grid);
+            // console.log(cur_grid);
             let tile = cur_grid[invertedTile_x][invertedTile_y];
             if (tile.fillColor.green > 0) {
                 tile.fillColor = 'red';
@@ -89,7 +94,7 @@ function invertTile(canvasName, x, y, inversion_size)
 };
 
 
-function detectClickOnCanvas(canvasName)
+function detectClickOnCanvas(canvasName, mouseX, mouseY)
 {
     let canvas = document.getElementById(canvasName);
     let rect = canvas.getBoundingClientRect();
@@ -102,33 +107,18 @@ function detectClickOnCanvas(canvasName)
     if (tile_on_canvas[0] < 0 || tile_on_canvas[0] >= grid_size) return;
     if (tile_on_canvas[1] < 0 || tile_on_canvas[1] >= grid_size) return;
 
-    if (event.key == ' ') {
-        invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], 0);
-    }
-    else {
-        key_locations[event.key] == [tile_on_canvas[0], tile_on_canvas[1]];
-        invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], inversion_size);
-    }
+    invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], 0);
 };
 
 
-function handleKeyDown(event)
+function handleMouseClick(event)
 {
-    if ((event.key < '1' || event.key > '9') && event.key != ' ') return;
-    
-    detectClickOnCanvas("gridCanvas_active");
-    detectClickOnCanvas("gridCanvas_target");
+    let mouseX = event.clientX;
+    let mouseY = event.clientY;
+    detectClickOnCanvas("gridCanvas_active", mouseX, mouseY);
+    detectClickOnCanvas("gridCanvas_target", mouseX, mouseY);
 };
-document.addEventListener('keydown', handleKeyDown);
-
-
-function handleMouseMove(event)
-{
-    event = event || window.event;  
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-};
-document.onmousemove = handleMouseMove;
+document.onclick = handleMouseClick;
 
 
 window.onload = function()
