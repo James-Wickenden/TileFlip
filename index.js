@@ -2,7 +2,7 @@
 let grid_target, grid_active;
 let canvas_target, canvas_active;
 let tile_width;
-let grid_size = 3;
+let grid_size = 4;
 let inversion_size = 1;
 let key_locations = {};
 
@@ -67,6 +67,7 @@ function resetActive()
             }
         }
     }
+    testForEquatedBoards()
 };
 
 
@@ -120,7 +121,7 @@ function detectClickOnCanvas(canvasName, mouseX, mouseY, invSize)
     if (tile_on_canvas[0] < 0 || tile_on_canvas[0] >= grid_size) return;
     if (tile_on_canvas[1] < 0 || tile_on_canvas[1] >= grid_size) return;
 
-    console.log(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize);
+    console.log(canvasName, 1 + tile_on_canvas[0] + (grid_size * tile_on_canvas[1]), invSize);
     invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize);
 };
 
