@@ -57,6 +57,19 @@ function testForEquatedBoards()
 };
 
 
+function resetActive()
+{
+    console.log('resetting');
+    for (var i = 0; i < grid_size; i++) {
+        for (var j = 0; j < grid_size; j++) {
+            if (grid_active[i][j].fillColor.red == 0) {
+                grid_active[i][j].fillColor = 'red';
+            }
+        }
+    }
+};
+
+
 function equateBoards()
 {
     invertTile('gridCanvas_target', 2, 2, 1);
@@ -103,10 +116,11 @@ function detectClickOnCanvas(canvasName, mouseX, mouseY, invSize)
                           Math.floor(position_on_canvas[1]/tile_width)];
     
     //console.log(canvas, rect, position_on_canvas, mouseX, mouseY, tile_on_canvas);
-
+    
     if (tile_on_canvas[0] < 0 || tile_on_canvas[0] >= grid_size) return;
     if (tile_on_canvas[1] < 0 || tile_on_canvas[1] >= grid_size) return;
 
+    console.log(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize);
     invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize);
 };
 

@@ -12,6 +12,11 @@
     margin: 10px;
 }
 
+#resetActive {
+    margin: 10px;
+    padding: 5px;
+}
+
 #equateTarget {
     margin: 10px;
     padding: 5px;
