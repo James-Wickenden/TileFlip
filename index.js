@@ -2,7 +2,7 @@
 let grid_target, grid_active;
 let canvas_target, canvas_active;
 let tile_width;
-let grid_size = 5;
+let grid_size = 3;
 let inversion_size = 1;
 let key_locations = {};
 
@@ -94,7 +94,7 @@ function invertTile(canvasName, x, y, inversion_size)
 };
 
 
-function detectClickOnCanvas(canvasName, mouseX, mouseY)
+function detectClickOnCanvas(canvasName, mouseX, mouseY, invSize)
 {
     let canvas = document.getElementById(canvasName);
     let rect = canvas.getBoundingClientRect();
@@ -107,7 +107,7 @@ function detectClickOnCanvas(canvasName, mouseX, mouseY)
     if (tile_on_canvas[0] < 0 || tile_on_canvas[0] >= grid_size) return;
     if (tile_on_canvas[1] < 0 || tile_on_canvas[1] >= grid_size) return;
 
-    invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], 0);
+    invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize);
 };
 
 
@@ -115,11 +115,23 @@ function handleMouseClick(event)
 {
     let mouseX = event.clientX;
     let mouseY = event.clientY;
-    detectClickOnCanvas("gridCanvas_active", mouseX, mouseY);
-    detectClickOnCanvas("gridCanvas_target", mouseX, mouseY);
+    detectClickOnCanvas("gridCanvas_active", mouseX, mouseY, 0);
+    detectClickOnCanvas("gridCanvas_target", mouseX, mouseY, 0);
 };
-document.onclick = handleMouseClick;
 
+
+function handleRightMouseClick(event)
+{
+    event.preventDefault();
+    let mouseX = event.clientX;
+    let mouseY = event.clientY;
+    detectClickOnCanvas("gridCanvas_active", mouseX, mouseY, 1);
+    detectClickOnCanvas("gridCanvas_target", mouseX, mouseY, 1);
+};
+
+
+document.onclick = handleMouseClick;
+document.oncontextmenu = handleRightMouseClick;
 
 window.onload = function()
 {
