@@ -4,7 +4,7 @@ let canvas_target, canvas_active;
 let tile_width;
 let grid_size = 4;
 let inversion_size = 1;
-let key_locations = {};
+let move_stack = [];
 
 paper.install(window);
 
@@ -18,7 +18,8 @@ function setUpBoard(grid_size)
 };
 
 
-function setUpCanvas(canvasName, grid_size) {
+function setUpCanvas(canvasName, grid_size)
+{
     let tilemap = Array(grid_size).fill().map(() => Array(grid_size).fill([]));
     let canvas = document.getElementById(canvasName);
 
@@ -41,25 +42,35 @@ function setUpCanvas(canvasName, grid_size) {
 
 function testForEquatedBoards()
 {
-    let equality_flag = document.getElementById('equatedBoards');
     for (var i = 0; i < grid_size; i++) {
         for (var j = 0; j < grid_size; j++) {
             if (grid_active[i][j].fillColor.red !== grid_target[i][j].fillColor.red) {
-                equality_flag.style.backgroundColor = 'red';
-                equality_flag.innerHTML = 'Unequal Boards!';
-                return;
+                return false;
             }
         }
     }
-    equality_flag.style.backgroundColor = 'green';
-    equality_flag.innerHTML = 'Equal Boards!';
-    return;
+    return true;
 };
 
 
-function resetActive()
+function updateEquationLabel()
 {
-    console.log('resetting');
+    let equality_flag = document.getElementById('equatedBoards');
+    let equalBoards = testForEquatedBoards();
+    if (equalBoards) {
+        equality_flag.style.backgroundColor = 'green';
+        equality_flag.innerHTML = 'Equal Boards!';
+    }
+    else {
+        equality_flag.style.backgroundColor = 'red';
+        equality_flag.innerHTML = 'Unequal Boards!';
+    };
+};
+
+
+function resetActive(shouldUpdateLabel)
+{
+    console.log('resetting...');
     for (var i = 0; i < grid_size; i++) {
         for (var j = 0; j < grid_size; j++) {
             if (grid_active[i][j].fillColor.red == 0) {
@@ -67,17 +78,89 @@ function resetActive()
             }
         }
     }
-    testForEquatedBoards()
+
+    if (shouldUpdateLabel) updateEquationLabel();
+    return;
+};
+
+
+function recurseEquator(blacklistedTiles, depth, maxdepth)
+{
+    if (depth == maxdepth) {
+        resetActive(false);
+        return;
+    };
+
+    for (var i = 0; i < grid_size; i++) {
+        for (var j = 0; j < grid_size; j++) {
+            let tileIndex = (i * grid_size) + j;
+            if (!blacklistedTiles.includes(tileIndex)) {
+                invertTile('gridCanvas_active', i, j, 1, true);
+                console.log('inverting ' + i + ', ' + j + ', depth ' + depth);
+                recurseEquator(blacklistedTiles + tileIndex, depth + 1, maxdepth);
+            }
+        }
+    }
+};
+
+
+function recurseEquator2(blacklistedTiles, depth, maxdepth)
+{
+    if (depth == maxdepth) {
+        resetActive(false);
+        return;
+    };
+
+    recursor:
+
+        // first, test for a correct solution and escape if we have one
+        console.log(i,j);
+        let equalBoards = testForEquatedBoards();
+        if (equalBoards) {
+            // escape
+            console.log('found solution!'); 
+            return;
+        };
+
+        // if no correct solution yet:
+        // we try the first available square and recurse
+        for (var i = 0; i < grid_size; i++) {
+            for (var j = 0; j < grid_size; j++) {
+                let tileIndex = (i * grid_size) + j;
+
+                if (!blacklistedTiles.includes(tileIndex)) {
+                    invertTile('gridCanvas_active', i, j, 1, true);
+                    recurseEquator(blacklistedTiles + tileIndex, depth + 1, maxdepth);
+                }
+            }
+        }
+
+};
+
+
+function undoMove()
+{
+    console.log('undoing...');
+    console.log(move_stack);
+    if (move_stack.length == 0) {
+        console.log('no moves left on move stack');
+        return;
+    };
+
+    let last_move = move_stack.pop();
+    invertTile(last_move[0], last_move[1], last_move[2], last_move[3], false);
 };
 
 
 function equateBoards()
 {
-    invertTile('gridCanvas_target', 2, 2, 1);
+    console.log('equating...');
+    recurseEquator([], 0, 2);
+    updateEquationLabel();
 };
 
 
-function invertTile(canvasName, x, y, inversion_size)
+function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
 {
     let cur_grid;
     if (canvasName == 'gridCanvas_active') {
@@ -87,8 +170,8 @@ function invertTile(canvasName, x, y, inversion_size)
         cur_grid = grid_target;
     }
 
-    for (var i = -inversion_size; i <= inversion_size; i++) {
-        for (var j = -inversion_size; j <= inversion_size; j++) {
+    for (var i = -inversionSize; i <= inversionSize; i++) {
+        for (var j = -inversionSize; j <= inversionSize; j++) {
             let invertedTile_x = x + i;
             let invertedTile_y = y + j;
             if (invertedTile_x < 0 || invertedTile_x >= grid_size) continue;
@@ -102,9 +185,10 @@ function invertTile(canvasName, x, y, inversion_size)
             else {
                 tile.fillColor = 'green';
             }
-            testForEquatedBoards();
         }
     }
+
+    if (addToMoveStack) move_stack.push([canvasName, x, y, inversionSize]);
 };
 
 
@@ -122,7 +206,8 @@ function detectClickOnCanvas(canvasName, mouseX, mouseY, invSize)
     if (tile_on_canvas[1] < 0 || tile_on_canvas[1] >= grid_size) return;
 
     console.log(canvasName, 1 + tile_on_canvas[0] + (grid_size * tile_on_canvas[1]), invSize);
-    invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize);
+    invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize, true);
+    testForEquatedBoards();
 };
 
 
