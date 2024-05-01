@@ -90,7 +90,7 @@ function resetActive(shouldUpdateLabel)
 };
 
 
-function recurseEquator(depth, tested_tiles)
+function recurseEquator_old(depth, tested_tiles)
 {
     if (depth == max_depth) return;
     if (solved) return;
@@ -124,6 +124,39 @@ function recurseEquator(depth, tested_tiles)
 };
 
 
+function isSolved(state_diff) 
+{
+    const isAllZero = (currentValue) => currentValue == 0;
+    return state_diff.every(isAllZero);
+};
+
+
+function recurseEquator(depth, tested_tiles)
+{
+    let state_diff = reduceBoardsToSolveMap();
+    // goal: reduce this to all 0s.
+    // first: test if this is the case!
+    if(isSolved(state_diff)) {
+        console.log('solved!');
+        return;
+    }
+
+    // if not, we try every 1-move solution, then every 2-move solution, and so on
+
+    for (var x = 0; x < grid_size; x++) {
+        for (var y = 0; y < grid_size; y++) {
+            state_diff = reduceBoardsToSolveMap();
+            invertStateTile(state_diff, x, y);
+
+            if(isSolved(state_diff)) {
+                console.log('solved!');
+                return;
+            }
+        }
+    }
+
+};
+
 function undoMove()
 {
     if (move_stack.length == 0) {
@@ -141,8 +174,8 @@ function equateBoards()
     console.log('solving...');
     solved = false;
     //resetActive();
-    //recurseEquator(0, '');
-    invertStateTile(reduceBoardsToSolveMap(), 0, 3);
+    recurseEquator(0, '');
+    //invertStateTile(reduceBoardsToSolveMap(), 0, 3);
 
     updateEquationLabel();
 };
@@ -171,7 +204,6 @@ function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
     }
 
     if (addToMoveStack) move_stack.push([canvasName, x, y, inversionSize]);
-    invertStateTile(reduceBoardsToSolveMap(), x, y);
 };
 
 
@@ -185,12 +217,14 @@ function invertStateTile(state_diff, x, y)
             console.log(invertedTile_index);
 
             if (invertedTile_index < 0 || invertedTile_index >= (grid_size * grid_size)) continue;
-            if (((i == -1) && (y % grid_size == 0)) || ((i == 1) && (y % grid_size == grid_size - 1))) continue;
-            if (((j == -1) && (x < grid_size)) || ((j == 1) && (x >= (grid_size * (grid_size - 1))))) continue;
+
+            if ((j == -1) && (invertedTile_index % grid_size == grid_size - 1)) continue;
+            if ((j == 1) && (invertedTile_index % grid_size == 0)) continue;
+
             state_diff[invertedTile_index] = 1 - state_diff[invertedTile_index];
         }
     }
-    
+
     state_move_stack.push([x, y]);
     console.log('after:');
     console.log(state_diff);
