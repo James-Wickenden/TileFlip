@@ -5,7 +5,7 @@ let tile_width;
 let grid_size = 4;
 let inversion_size = 1;
 let move_stack = [], state_move_stack = [];
-let max_depth = 5;
+let max_depth = 2;
 let solved = false;
 
 paper.install(window);
@@ -42,23 +42,10 @@ function setUpCanvas(canvasName, grid_size)
 };
 
 
-function testForEquatedBoards()
-{
-    for (var i = 0; i < grid_size; i++) {
-        for (var j = 0; j < grid_size; j++) {
-            if (grid_active[i][j].fillColor.red !== grid_target[i][j].fillColor.red) {
-                return false;
-            }
-        }
-    }
-    return true;
-};
-
-
 function updateEquationLabel()
 {
     let equality_flag = document.getElementById('equatedBoards');
-    let equalBoards = testForEquatedBoards();
+    let equalBoards = isSolved(reduceBoardsToSolveMap()); 
     if (equalBoards) {
         equality_flag.style.backgroundColor = 'green';
         equality_flag.innerHTML = 'Equal Boards!';
@@ -75,18 +62,12 @@ function resetActive(shouldUpdateLabel)
     console.log('resetting...');
     for (var i = 0; i < grid_size; i++) {
         for (var j = 0; j < grid_size; j++) {
-            if (grid_active[i][j].fillColor.red == 0) {
-                grid_active[i][j].fillColor = 'red';
-            }
+            grid_active[i][j].fillColor = 'red';
+            grid_target[i][j].fillColor = 'red';
         }
     }
 
-    for (let i = 0; i < move_stack.length; i++) {
-        if (move_stack[i][0] == 'gridCanvas_active') move_stack.splice(i, 1);
-    }
-
-    if (shouldUpdateLabel) updateEquationLabel();
-    return;
+    move_stack = [];
 };
 
 
@@ -131,7 +112,7 @@ function isSolved(state_diff)
 };
 
 
-function recurseEquator(depth, tested_tiles)
+function recurseEquator(depth)
 {
     let state_diff = reduceBoardsToSolveMap();
     // goal: reduce this to all 0s.
@@ -143,19 +124,36 @@ function recurseEquator(depth, tested_tiles)
 
     // if not, we try every 1-move solution, then every 2-move solution, and so on
 
-    for (var x = 0; x < grid_size; x++) {
-        for (var y = 0; y < grid_size; y++) {
-            state_diff = reduceBoardsToSolveMap();
-            invertStateTile(state_diff, x, y);
+    for (var iteration = 0; iteration <= depth; iteration++) {
+        for (var x = 0; x < grid_size; x++) {
+            for (var y = 0; y < grid_size; y++) {
+                invertStateTile(state_diff, x, y, true);
 
-            if(isSolved(state_diff)) {
-                console.log('solved!');
-                return;
+                if(isSolved(state_diff)) {
+                    console.log('solved!');
+                    return;
+                }
+
+                undoStateMove(state_diff);
             }
         }
     }
 
+    recurseEquator(depth + 1);
 };
+
+
+function undoStateMove(state_diff)
+{
+    if (state_move_stack.length == 0) {
+        console.log('no moves left on move stack');
+        return;
+    };
+
+    let last_move = state_move_stack.pop() || [];
+    invertStateTile(state_diff, last_move[0], last_move[1], false);
+};
+
 
 function undoMove()
 {
@@ -204,10 +202,11 @@ function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
     }
 
     if (addToMoveStack) move_stack.push([canvasName, x, y, inversionSize]);
+    updateEquationLabel();
 };
 
 
-function invertStateTile(state_diff, x, y)
+function invertStateTile(state_diff, x, y, addToMoveStack)
 {
     console.log('before: ' + x + ', ' + y);
     console.log(state_diff);
@@ -225,7 +224,7 @@ function invertStateTile(state_diff, x, y)
         }
     }
 
-    state_move_stack.push([x, y]);
+    if (addToMoveStack) state_move_stack.push([x, y]);
     console.log('after:');
     console.log(state_diff);
 };
@@ -265,7 +264,6 @@ function detectClickOnCanvas(canvasName, mouseX, mouseY, invSize)
 
     console.log(canvasName, 1 + tile_on_canvas[0] + (grid_size * tile_on_canvas[1]), invSize);
     invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize, true);
-    testForEquatedBoards();
 };
 
 
