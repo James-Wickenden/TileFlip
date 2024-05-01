@@ -2,9 +2,9 @@
 let grid_target, grid_active;
 let canvas_target, canvas_active;
 let tile_width;
-let grid_size = 5;
+let grid_size = 4;
 let inversion_size = 1;
-let move_stack = [];
+let move_stack = [], state_move_stack = [];
 let max_depth = 5;
 let solved = false;
 
@@ -140,8 +140,10 @@ function equateBoards()
 {
     console.log('solving...');
     solved = false;
-    resetActive();
-    recurseEquator(0, '');
+    //resetActive();
+    //recurseEquator(0, '');
+    invertStateTile(reduceBoardsToSolveMap(), 0, 3);
+
     updateEquationLabel();
 };
 
@@ -169,6 +171,48 @@ function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
     }
 
     if (addToMoveStack) move_stack.push([canvasName, x, y, inversionSize]);
+    invertStateTile(reduceBoardsToSolveMap(), x, y);
+};
+
+
+function invertStateTile(state_diff, x, y)
+{
+    console.log('before: ' + x + ', ' + y);
+    console.log(state_diff);
+    for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+            let invertedTile_index = ((y + i) * grid_size) + x + j;
+            console.log(invertedTile_index);
+
+            if (invertedTile_index < 0 || invertedTile_index >= (grid_size * grid_size)) continue;
+            if (((i == -1) && (y % grid_size == 0)) || ((i == 1) && (y % grid_size == grid_size - 1))) continue;
+            if (((j == -1) && (x < grid_size)) || ((j == 1) && (x >= (grid_size * (grid_size - 1))))) continue;
+            state_diff[invertedTile_index] = 1 - state_diff[invertedTile_index];
+        }
+    }
+    
+    state_move_stack.push([x, y]);
+    console.log('after:');
+    console.log(state_diff);
+};
+
+
+function reduceBoardsToSolveMap()
+{
+    let state_diff = [];
+    
+    for (let i = 0; i < grid_size; i++) {
+        for (let j = 0; j < grid_size; j++) {
+            if (grid_active[j][i].fillColor.green == grid_target[j][i].fillColor.green) {
+                state_diff.push(0);
+            }
+            else {
+                state_diff.push(1);
+            }
+        }
+    }
+
+    return state_diff;
 };
 
 
