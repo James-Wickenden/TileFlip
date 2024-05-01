@@ -119,7 +119,6 @@ function recurseEquator(depth, tested_tiles)
             };
             
             if (!solved) undoMove();
-            
         }
     }
 };
@@ -149,13 +148,7 @@ function equateBoards()
 
 function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
 {
-    let cur_grid;
-    if (canvasName == 'gridCanvas_active') {
-        cur_grid = grid_active;
-    }
-    else {
-        cur_grid = grid_target;
-    }
+    let cur_grid = (canvasName == 'gridCanvas_active') ? grid_active : grid_target;
 
     for (var i = -inversionSize; i <= inversionSize; i++) {
         for (var j = -inversionSize; j <= inversionSize; j++) {
