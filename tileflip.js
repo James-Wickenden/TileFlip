@@ -1,9 +1,9 @@
 'use strict';
+
 let grid_target, grid_active;
 let canvas_target, canvas_active;
 let tile_width;
 let grid_size = 4;
-let inversion_size = 1;
 let move_stack = [], state_move_stack = [];
 let max_depth = 2;
 let solved = false;
@@ -68,40 +68,6 @@ function resetActive(shouldUpdateLabel)
     }
 
     move_stack = [];
-};
-
-
-function recurseEquator_old(depth, tested_tiles)
-{
-    if (depth == max_depth) return;
-    if (solved) return;
-
-    for (var i = 0; i < grid_size; i++) {
-        for (var j = 0; j < grid_size; j++) {
-            let tile_index = (i * grid_size) + j;
-
-            if (tested_tiles.split(',').includes(String(tile_index))) {
-                console.log('already tried ' + tile_index);
-                continue;
-            }
-            invertTile('gridCanvas_active', i, j, 1, true);
-            recurseEquator(depth + 1, tested_tiles + ',' + tile_index);
-            let equalBoards = testForEquatedBoards();
-            if (equalBoards) {
-                console.log('found solution!'); 
-                console.log(move_stack);
-                for (let i = 0; i < move_stack.length; i++) {
-                    if (move_stack[i][0] == 'gridCanvas_active') {
-                        grid_active[move_stack[i][1]][move_stack[i][2]].fillColor.blue = 1;
-                    }
-                }
-                solved = true;
-                return;
-            };
-            
-            if (!solved) undoMove();
-        }
-    }
 };
 
 
@@ -190,7 +156,6 @@ function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
             if (invertedTile_x < 0 || invertedTile_x >= grid_size) continue;
             if (invertedTile_y < 0 || invertedTile_y >= grid_size) continue;
 
-            // console.log(cur_grid);
             let tile = cur_grid[invertedTile_x][invertedTile_y];
             if (tile.fillColor.green > 0) {
                 tile.fillColor = 'red';
