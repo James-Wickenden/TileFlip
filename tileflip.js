@@ -59,7 +59,6 @@ function updateEquationLabel()
 
 function resetActive(shouldUpdateLabel)
 {
-    console.log('resetting...');
     for (var i = 0; i < grid_size; i++) {
         for (var j = 0; j < grid_size; j++) {
             grid_active[i][j].fillColor = 'red';
@@ -78,25 +77,87 @@ function isSolved(state_diff)
 };
 
 
-function recurseEquator(depth)
+class Node {
+    constructor(state, cur_depth)
+    {
+        this.state = this.cloneState(state);
+        this.cur_depth = cur_depth;
+        this.solved = false;
+    };
+
+    cloneState(state)
+    {
+        let newState = [];
+        for (let i = 0; i < state.length; i++) {
+            newState.push(state[i]);
+        }
+        return newState;
+    };
+}
+
+class SearchTree {
+    constructor()
+    {
+        this.root = new Node(reduceBoardsToSolveMap(), 0);
+    };
+
+    depthFirstSearch(node)
+    {
+        if (node.cur_depth == max_depth) {
+            return;
+        }
+
+        if(isSolved(node.state)) {
+            console.log('solved!');
+            node.solved = true;
+            return;
+        }
+            
+        for (let x = 0; x < grid_size; x++) {
+            for (let y = 0; y < grid_size; y++) {
+                let child = new Node(node.state, node.cur_depth + 1);
+                invertStateTile(child.state, x, y, true);
+                this.depthFirstSearch(child);
+                if (child.solved) {
+                    node.solved = true;
+                    console.log('X: ' + x + ', Y: ' + y);
+                    return [x, y];
+                }
+            }
+        }
+
+    };
+}
+
+
+function recurseEquator(depth) 
+{
+    console.log('go!');
+    let searchTree = new SearchTree();
+    searchTree.depthFirstSearch(searchTree.root);
+};
+
+
+function recurseEquator_old(depth)
 {
     let state_diff = reduceBoardsToSolveMap();
     // goal: reduce this to all 0s.
     // first: test if this is the case!
     if(isSolved(state_diff)) {
-        console.log('solved!');
+        //console.log('solved!');
         return;
     }
 
     // if not, we try every 1-move solution, then every 2-move solution, and so on
-
+    // to do this: we make a number of moves equal to the current depth
+    // after making a full path guess, we should backtrack once
     for (var iteration = 0; iteration <= depth; iteration++) {
         for (var x = 0; x < grid_size; x++) {
             for (var y = 0; y < grid_size; y++) {
                 invertStateTile(state_diff, x, y, true);
 
                 if(isSolved(state_diff)) {
-                    console.log('solved!');
+                    //console.log('solved!');
                     return;
                 }
 
@@ -111,10 +172,7 @@ function recurseEquator(depth)
 
 function undoStateMove(state_diff)
 {
-    if (state_move_stack.length == 0) {
-        console.log('no moves left on move stack');
-        return;
-    };
+    if (state_move_stack.length == 0) return;
 
     let last_move = state_move_stack.pop() || [];
     invertStateTile(state_diff, last_move[0], last_move[1], false);
@@ -123,10 +181,7 @@ function undoStateMove(state_diff)
 
 function undoMove()
 {
-    if (move_stack.length == 0) {
-        console.log('no moves left on move stack');
-        return;
-    };
+    if (move_stack.length == 0) return;
 
     let last_move = move_stack.pop() || [];
     invertTile(last_move[0], last_move[1], last_move[2], last_move[3], false);
@@ -135,7 +190,6 @@ function undoMove()
 
 function equateBoards()
 {
-    console.log('solving...');
     solved = false;
     //resetActive();
     recurseEquator(0, '');
@@ -173,15 +227,13 @@ function invertTile(canvasName, x, y, inversionSize, addToMoveStack)
 
 function invertStateTile(state_diff, x, y, addToMoveStack)
 {
-    console.log('before: ' + x + ', ' + y);
-    console.log(state_diff);
+    //console.log('before: ' + x + ', ' + y);
+    //console.log(state_diff);
     for (var i = -1; i <= 1; i++) {
         for (var j = -1; j <= 1; j++) {
             let invertedTile_index = ((y + i) * grid_size) + x + j;
-            console.log(invertedTile_index);
 
             if (invertedTile_index < 0 || invertedTile_index >= (grid_size * grid_size)) continue;
-
             if ((j == -1) && (invertedTile_index % grid_size == grid_size - 1)) continue;
             if ((j == 1) && (invertedTile_index % grid_size == 0)) continue;
 
@@ -190,8 +242,8 @@ function invertStateTile(state_diff, x, y, addToMoveStack)
     }
 
     if (addToMoveStack) state_move_stack.push([x, y]);
-    console.log('after:');
-    console.log(state_diff);
+    //console.log('after:');
+    //console.log(state_diff);
 };
 
 
@@ -227,7 +279,7 @@ function detectClickOnCanvas(canvasName, mouseX, mouseY, invSize)
     if (tile_on_canvas[0] < 0 || tile_on_canvas[0] >= grid_size) return;
     if (tile_on_canvas[1] < 0 || tile_on_canvas[1] >= grid_size) return;
 
-    console.log(canvasName, 1 + tile_on_canvas[0] + (grid_size * tile_on_canvas[1]), invSize);
+    //console.log(canvasName, 1 + tile_on_canvas[0] + (grid_size * tile_on_canvas[1]), invSize);
     invertTile(canvasName, tile_on_canvas[0], tile_on_canvas[1], invSize, true);
 };
 
