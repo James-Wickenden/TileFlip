@@ -5,7 +5,7 @@ let canvas_target, canvas_active;
 let tile_width;
 let grid_size = 4;
 let move_stack = [], state_move_stack = [];
-let max_depth = 2;
+let max_depth = 3;
 let solved = false;
 
 paper.install(window);
@@ -103,38 +103,58 @@ class SearchTree {
 
     depthFirstSearch(node)
     {
-        if (node.cur_depth == max_depth) {
+        if (node.cur_depth > max_depth) {
             return;
         }
 
         if(isSolved(node.state)) {
             console.log('solved!');
             node.solved = true;
-            return;
+            return [];
         }
             
         for (let x = 0; x < grid_size; x++) {
             for (let y = 0; y < grid_size; y++) {
                 let child = new Node(node.state, node.cur_depth + 1);
+
                 invertStateTile(child.state, x, y, true);
-                this.depthFirstSearch(child);
+
+                if(isSolved(child.state)) {
+                    console.log('X: ' + x + ', Y: ' + y);
+                    node.solved = true;
+                    return [[x, y]];
+                }
+
+                let iteration_solution = this.depthFirstSearch(child);
                 if (child.solved) {
                     node.solved = true;
-                    console.log('X: ' + x + ', Y: ' + y);
-                    return [x, y];
+                    return iteration_solution.concat([[x, y]]);
                 }
             }
         }
-
+        return [];
     };
 }
 
 
 function recurseEquator(depth) 
 {
-    console.log('go!');
     let searchTree = new SearchTree();
-    searchTree.depthFirstSearch(searchTree.root);
+    let res = searchTree.depthFirstSearch(searchTree.root);
+
+    console.log(res);
+
+    let equality_flag = document.getElementById('equatedBoards');
+    equality_flag.style.backgroundColor = 'purple';
+    if (res == []) {
+        equality_flag.innerHTML = 'No solution found...';
+    }
+    else {
+        equality_flag.innerHTML = 'Solution found! Tiles highlighted.';
+        for (let i = 0; i < res.length; i++) {
+            grid_active[res[i][0]][res[i][1]].fillColor.purple;
+        }
+    }
 };
 
 
